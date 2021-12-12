@@ -3,7 +3,8 @@ import ws from "ws";
 import lastfm from "lastfm-typed";
 import fs from "fs/promises";
 
-const lfm = new lastfm("e5310d1dbb33807f7217a58772bf4025", {
+const apiKey = "e5310d1dbb33807f7217a58772bf4025";
+const lfm = new lastfm(apiKey, {
   apiSecret: "09d64e9671521726fea70820e9c791a1",
   userAgent: "dreamingkills/shinbatsu",
 });
@@ -43,7 +44,7 @@ socket.onopen = async () => {
   if (debug) console.log(`No session key found, initiating auth flow...`);
 
   const token = await lfm.auth.getToken();
-  const url = `https://www.last.fm/api/auth?api_key=e5310d1dbb33807f7217a58772bf4025&token=${token}`;
+  const url = `https://www.last.fm/api/auth?api_key=${apiKey}&token=${token}`;
 
   console.log(
     `\nTo start using \u001b[35mShinbatsu\u001b[0m, please authorize with the following link!\n${url}\n`
