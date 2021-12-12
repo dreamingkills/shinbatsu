@@ -15,5 +15,8 @@
   "main": "dist/index.js",
   "repository": "https://github.com/dreamingkills/shinbatsu",
   "author": "@aeoneko <Twitter>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "start": "yarn node ./dist"
+  }
 }
