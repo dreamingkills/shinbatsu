@@ -4,7 +4,7 @@ scrobble your osu! beatmaps to last.fm!
 
 ## Installation
 
-you will need [gosumemory](https://github.com/l3lackShark/gosumemory), [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git), [nodejs](https://nodejs.org/en/download/) and [yarn](https://classic.yarnpkg.com/en/docs/getting-started) to run this script.
+you will need [gosumemory](https://github.com/l3lackShark/gosumemory) to run this script.
 
 1. download the [latest shinbatsu release](https://github.com/dreamingkills/shinbatsu/releases/latest)
 2. move the executable to a folder only occupied by the executable file
