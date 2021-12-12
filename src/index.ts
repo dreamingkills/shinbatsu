@@ -97,6 +97,7 @@ socket.onmessage = async (event) => {
 
   let { artist, title }: { artist: string; title: string } =
     data.menu.bm.metadata;
+
   title = title
     .replace(/(\(tv size\)|\(spee?d up ver\.?\)|\(cut ver\.?\))/gi, ``)
     .trim();
