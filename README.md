@@ -8,9 +8,10 @@ you will need [gosumemory](https://github.com/l3lackShark/gosumemory), [git](htt
 
 1. launch osu! and `gosumemory`
 2. clone the repository into a folder of your choice
-3. run `yarn` to install dependencies
-4. run `yarn tsc` to compile the project
-5. run `yarn start` and follow the instructions displayed
+3. open a command prompt and navigate to the directory containing shinbatsu
+4. run `yarn` to install dependencies
+5. run `yarn tsc` to compile the project
+6. run `yarn start` and follow the instructions displayed
 
 enjoy!
 
