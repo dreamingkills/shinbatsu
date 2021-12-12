@@ -2,6 +2,7 @@ import rws from "reconnecting-websocket";
 import ws from "ws";
 import lastfm from "lastfm-typed";
 import fs from "fs/promises";
+import path from "path";
 
 const apiKey = "e5310d1dbb33807f7217a58772bf4025";
 const lfm = new lastfm(apiKey, {
@@ -23,7 +24,7 @@ socket.onopen = async () => {
   let config: { sessionkey: string };
 
   try {
-    const rawConfig = await fs.readFile("./config.json");
+    const rawConfig = await fs.readFile(path.join(__dirname, "../config.json"));
     config = JSON.parse(rawConfig.toString()) as {
       sessionkey: string;
     };
@@ -56,7 +57,7 @@ socket.onopen = async () => {
       sessionKey = session.key;
 
       await fs.writeFile(
-        "./config.json",
+        path.join(__dirname, "../config.json"),
         JSON.stringify({ sessionkey: sessionKey })
       );
 
