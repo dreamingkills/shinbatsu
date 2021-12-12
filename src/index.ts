@@ -21,28 +21,19 @@ const socket = new rws("ws://127.0.0.1:24050/ws", [], {
 });
 
 socket.onopen = async () => {
-  let config: { sessionkey: string };
-
   try {
-    const rawConfig = await fs.readFile(path.join(__dirname, "../config.json"));
-    config = JSON.parse(rawConfig.toString()) as {
-      sessionkey: string;
-    };
+    const rawKey = await fs.readFile(path.resolve(process.cwd(), "sessionkey"));
+    const key = rawKey.toString();
+
+    if (key && key.length === 32) {
+      sessionKey = key;
+      scrobbling = true;
+
+      return;
+    }
   } catch (e) {
-    config = { sessionkey: "" };
+    if (debug) console.log("Did not find an existing session key!");
   }
-
-  if (config.sessionkey) {
-    if (debug)
-      console.log(`Session key found in config.json, skipping auth flow...`);
-
-    sessionKey = config.sessionkey;
-
-    scrobbling = true;
-    return;
-  }
-
-  if (debug) console.log(`No session key found, initiating auth flow...`);
 
   const token = await lfm.auth.getToken();
   const url = `https://www.last.fm/api/auth?api_key=${apiKey}&token=${token}`;
@@ -56,17 +47,13 @@ socket.onopen = async () => {
       const session = await lfm.auth.getSession(token);
       sessionKey = session.key;
 
-      await fs.writeFile(
-        path.join(__dirname, "../config.json"),
-        JSON.stringify({ sessionkey: sessionKey })
-      );
+      await fs.writeFile(path.resolve(process.cwd(), "sessionkey"), sessionKey);
 
       scrobbling = true;
       clearInterval(interval);
       return;
     } catch (e) {
-      if (debug) console.log(`Poll failed - user has not yet authorized`);
-      // do nothing
+      if (debug) console.log(e);
     }
   }, 5000);
 };

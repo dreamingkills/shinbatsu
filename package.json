@@ -18,5 +18,10 @@
   "license": "MIT",
   "scripts": {
     "start": "yarn node ./dist"
-  }
+  },
+  "pkg": {
+    "assets": "sessionkey",
+    "outputPath": "out"
+  },
+  "bin": "./dist/index.js"
 }
