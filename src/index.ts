@@ -32,7 +32,7 @@ socket.onopen = async () => {
       return;
     }
   } catch (e) {
-    if (debug) console.log("Did not find an existing session key!");
+    d("Did not find an existing session key!");
   }
 
   const token = await lfm.auth.getToken();
@@ -53,53 +53,112 @@ socket.onopen = async () => {
       clearInterval(interval);
       return;
     } catch (e) {
-      if (debug) console.log(e);
+      d(e);
     }
   }, 5000);
 };
 
 let gameState: number | undefined;
 socket.onmessage = async (event) => {
-  if (!scrobbling) return;
+  const previousState = gameState;
 
+  if (!scrobbling) return;
   const data = JSON.parse(event.data);
 
-  let isInitialState =
-    gameState === undefined && gameState !== 7 && gameState !== 14;
-
-  if (gameState === data.menu.state) return;
-  gameState = data.menu.state;
-
-  if (isInitialState) {
-    if (debug) console.log("Passing scrobble due to initial state...");
+  // runs only on the first pass
+  if (gameState === undefined) {
     console.log(
       `\u001b[35mShinbatsu\u001b[0m is listening!\nSongs will be scrobbled \u001b[4mupon beatmap completion\u001b[0m.\n`
     );
+
+    gameState = data.menu.state;
     return;
   }
 
-  if (gameState !== 7 && gameState !== 14) {
-    if (debug)
-      console.log("Passing scrobble due to non-result state change...");
-    return;
-  }
+  // if the current game state is the same as the previous, there's no point in running the code again
+  if (gameState === data.menu.state) return;
+  gameState = data.menu.state;
 
-  let { artist, title }: { artist: string; title: string } =
-    data.menu.bm.metadata;
+  // 2 = Playing
+  // 7 = Results Screen
+  // 14 = Multiplayer Results Screen
+  // see full list at https://github.com/Piotrekol/ProcessMemoryDataFinder/blob/master/OsuMemoryDataProvider/OsuMemoryStatus.cs
+  if (![2, 7, 14].includes(gameState!)) return;
 
-  title = title
-    .replace(/(\(tv size\)|\(spee?d up ver\.?\)|\(cut ver\.?\))/gi, ``)
-    .trim();
+  let artist = data.menu.bm.metadata.artist;
+  let track = data.menu.bm.metadata.title.replace(
+    /(\(tv size\)|\(spee?d up ver\.?\)|\(cut ver\.?\))/gi,
+    ``
+  );
+  let album: string | undefined;
+
+  d(`Attempting to find Last.fm data for ${f(artist, track, album)}...`);
 
   try {
-    await lfm.track.scrobble(sessionKey, [
-      { artist, track: title, timestamp: Math.floor(Date.now() / 1000) },
-    ]);
+    const lfmTrack = await lfm.track.getInfo({ artist, track });
 
-    console.log(
-      `Successfully scrobbled \u001b[35m${artist}\u001b[0m - ${title}!`
-    );
+    album = lfmTrack.album?.title;
+    d("Successfully found track data.");
   } catch (e) {
-    console.error(e);
+    d("Failed to find track data.");
+  }
+
+  if (gameState === 2) {
+    d(`Attempting to set now playing to ${f(artist, track, album)}...`);
+
+    // duration is necessary in order to clear the Now Playing in a timely manner
+    let duration = Math.floor(data.menu.bm.time.mp3 / 1000);
+    const isDT = data.menu.mods.str.includes("DT");
+    const isHT = data.menu.mods.str.includes("HT");
+
+    if (isDT) duration = duration / 1.5;
+    if (isHT) duration = duration * 1.33;
+
+    await lfm.track.updateNowPlaying(artist, track, sessionKey, {
+      album,
+      duration,
+    });
+
+    d(`Successfully updated now playing.`);
+    return;
+  } else if ([7, 14].includes(gameState!)) {
+    // only scrobble if the user was playing
+    // without this, it would scrobble when viewing scores w/o playing
+    if (previousState !== 2) return;
+
+    d(`Attempting to scrobble ${f(artist, track, album)}...`);
+
+    const scrobble: {
+      artist: string;
+      track: string;
+      album?: string;
+      timestamp: number;
+    } = {
+      artist,
+      track,
+      timestamp: Math.floor(Date.now() / 1000),
+    };
+
+    // lastfm-typed will break if 'album' is set to undefined
+    // temporary workaround until patch
+    if (album) scrobble.album = album;
+
+    try {
+      await lfm.track.scrobble(sessionKey, [scrobble]);
+
+      console.log(`Successfully scrobbled ${f(artist, track, album)}!`);
+    } catch (e) {
+      console.log(`Failed to scrobble ${f(artist, track, album)} :(`);
+
+      d(e);
+    }
   }
 };
+
+function f(artist: string, track: string, album: string | undefined): string {
+  return `\u001b[35m${artist}\u001b[0m - ${track}${album ? ` (${album})` : ""}`;
+}
+
+function d(msg: any) {
+  if (debug) console.log(msg);
+}

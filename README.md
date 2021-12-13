@@ -1,6 +1,13 @@
 # shinbatsu
 
-scrobble your osu! beatmaps to last.fm!
+scrobble your played osu! beatmaps to last.fm!
+
+## Features
+
+- updates your last.fm "now playing" when you play a beatmap or watch a replay
+- scrobbles the song upon beatmap or replay completion
+- automatically removes `(TV Size)`, etc. from song titles
+- tries to retrieve album from last.fm data
 
 ## Installation
 
@@ -22,8 +29,5 @@ you can find me on [twitter](https://twitter.com/aeoneko) or on discord at `ae#2
 Q: **can i use this in a gosumemory frontend?**<br>
 A: not currently, but it's being worked on.
 
-Q: **help! it's not scrobbling with an album name!**<br>
-A: osu! does not provide album metadata. you can edit the scrobbles yourself and set it to edit automatically with last.fm pro.
-
-Q: **what if the beatmap is TV Size?**<br>
-A: shinbatsu will automatically parse out `(TV Size)`, `(Cut Ver.)`, and `(Sped Up Ver.)` and their variations from song titles. feel free to submit a PR to remove other tags.
+Q: **help! it's scrobbling with incorrect metadata!**<br>
+A: shinbatsu does its best to determine metadata from both osu! and last.fm. you can correct your scrobbles with [last.fm pro](https://www.last.fm/pro) or open an issue if it's particularly bad.
