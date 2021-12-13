@@ -114,10 +114,13 @@ socket.onmessage = async (event) => {
     if (isDT) duration = duration / 1.5;
     if (isHT) duration = duration * 1.33;
 
-    await lfm.track.updateNowPlaying(artist, track, sessionKey, {
-      album,
-      duration,
-    });
+    const params: { album?: string; duration: number } = { duration };
+
+    // lastfm-typed will break if 'album' is set to undefined
+    // temporary workaround until patch
+    if (album) params.album = album;
+
+    await lfm.track.updateNowPlaying(artist, track, sessionKey, params);
 
     d(`Successfully updated now playing.`);
     return;
